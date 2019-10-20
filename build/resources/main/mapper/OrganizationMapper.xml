@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youdao.sortinghat.dao.mysql.mapper.OrganizationMapper">
+  <resultMap id="BaseResultMap" type="com.youdao.sortinghat.dao.mysql.model.OrganizationEntity">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="school_id" jdbcType="INTEGER" property="schoolId" />
+    <result column="term_id" jdbcType="INTEGER" property="termId" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+    <result column="grade" jdbcType="TINYINT" property="grade" />
+    <result column="subject" jdbcType="TINYINT" property="subject" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+  </resultMap>
+  <update id="updateStatus">
+    UPDATE organization
+    SET status = #{status}
+    WHERE id = #{id}
+    AND status = #{oldStatus}
+  </update>
+  <select id="getBySchoolIdAndTypeAndGradeAndSubjectAndTermIdAndName" resultMap="BaseResultMap">
+    SELECT *
+    FROM organization
+    WHERE school_id = #{schoolId}
+    AND type = #{type}
+    AND grade = #{grade}
+    AND subject = #{subject}
+    AND term_id = #{termId}
+    AND name = #{name}
+  </select>
+  <select id="getBySchoolId" resultMap="BaseResultMap">
+    SELECT *
+    FROM organization
+    WHERE school_id = #{schoolId}
+    AND status >= 0
+  </select>
+  <select id="getByStudentId" resultMap="BaseResultMap">
+    SELECT o.*
+    FROM organization_student os, organization o
+    WHERE os.organization_id = o.id
+    AND os.student_id = #{studentId}
+    AND o.status >= 0
+  </select>
+  <select id="getByStudentIdAndStatus" resultMap="BaseResultMap">
+    SELECT o.*
+    FROM organization_student os, organization o
+    WHERE os.organization_id = o.id
+    AND os.student_id = #{studentId}
+    AND o.status = #{status}
+  </select>
+  <select id="getByTeacherIdAndStatus" resultMap="BaseResultMap">
+    SELECT o.*
+    FROM organization_teacher ot, organization o
+    WHERE ot.organization_id = o.id
+    AND ot.teacher_id = #{teacherId}
+    AND o.status = #{status}
+  </select>
+  <select id="query" resultMap="BaseResultMap">
+    SELECT *
+    FROM organization
+    WHERE school_id = #{schoolId}
+    AND status >= 0
+    <if test="type > 0">
+      AND type = #{type}
+    </if>
+    <if test="grade > 0">
+      AND grade = #{grade}
+    </if>
+    <if test="subject > 0">
+      AND subject = #{subject}
+    </if>
+    <if test="termId > 0">
+      AND term_id = #{termId}
+    </if>
+    <if test="name != ''">
+      <bind name="nameLike" value="'%' + name + '%'"/>
+      AND name like #{nameLike}
+    </if>
+    <if test="status != -99">
+      AND status = #{status}
+    </if>
+  </select>
+  <select id="getById" resultMap="BaseResultMap">
+    SELECT *
+    FROM organization
+    WHERE id = #{id}
+  </select>
+  <select id="getOrganizationAndSubjectByTeacherId" resultType="java.util.Map">
+    SELECT o.id AS organizationId, o.name AS organizationName, o.type AS organizationType, ot.subject AS subjectId
+    FROM organization_teacher ot, organization o
+    WHERE ot.organization_id = o.id
+    AND ot.teacher_id = #{teacherId}
+    AND o.status >= 0
+  </select>
+  <select id="getBySchoolIdAndName" resultMap="BaseResultMap">
+    SELECT *
+    FROM organization
+    WHERE school_id = #{schoolId}
+    AND name = #{name}
+  </select>
+</mapper>

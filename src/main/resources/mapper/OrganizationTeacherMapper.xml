@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youdao.sortinghat.dao.mysql.mapper.OrganizationTeacherMapper">
+  <resultMap id="BaseResultMap" type="com.youdao.sortinghat.dao.mysql.model.OrganizationTeacherEntity">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="organization_id" jdbcType="INTEGER" property="organizationId" />
+    <result column="teacher_id" jdbcType="INTEGER" property="teacherId" />
+    <result column="subject" jdbcType="TINYINT" property="subject" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <select id="getByOrganizationIdAndTeacherIdAndSubject" resultMap="BaseResultMap">
+    SELECT *
+    FROM organization_teacher
+    WHERE organization_id = #{organizationId}
+    AND teacher_id = #{teacherId}
+    AND subject = #{subject}
+  </select>
+</mapper>

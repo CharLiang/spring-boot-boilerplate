@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youdao.sortinghat.dao.mysql.mapper.TeacherMapper">
+  <resultMap id="BaseResultMap" type="com.youdao.sortinghat.dao.mysql.model.TeacherEntity">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="school_id" jdbcType="INTEGER" property="schoolId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="no" jdbcType="VARCHAR" property="no" />
+    <result column="mobile" jdbcType="VARCHAR" property="mobile" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+  </resultMap>
+  <update id="updateStatus">
+    UPDATE teacher
+    SET status = #{status}
+    WHERE id = #{id}
+    AND status = #{oldStatus}
+  </update>
+  <select id="getActivateTeacherIdByMobile" resultType="java.lang.Integer">
+    SELECT id
+    FROM teacher
+    WHERE mobile = #{mobile}
+    AND status = 1
+    ORDER BY id DESC;
+  </select>
+  <select id="getBySchoolId" resultMap="BaseResultMap">
+    SELECT *
+    FROM teacher
+    WHERE school_id = #{schoolId}
+    AND status >= 0
+  </select>
+  <select id="getByOrganizationIdAndTeacherIdAndSubject" resultMap="BaseResultMap">
+    SELECT t.*
+    FROM teacher t, organization_teacher ot
+    WHERE t.id = ot.teacher_id
+    AND ot.organization_id = #{organizationId}
+    AND ot.teacher_id = #{teacherId}
+    AND ot.subject = #{subject}
+  </select>
+  <select id="queryLike" resultMap="BaseResultMap">
+    SELECT DISTINCT t.*
+    FROM teacher t
+    LEFT JOIN organization_teacher ot
+    ON t.id = ot.teacher_id
+    WHERE t.school_id = #{schoolId}
+    AND t.status >= 0
+    <if test="organizationId > 0">
+      AND ot.organization_id = #{organizationId}
+    </if>
+    <if test="key != ''">
+      <bind name="keyLike" value="'%' + key + '%'"/>
+      AND (t.name LIKE #{keyLike} OR t.no LIKE #{keyLike} OR t.mobile LIKE #{keyLike})
+    </if>
+  </select>
+  <select id="countBySchoolIdAndClassId" resultType="java.lang.Integer">
+    SELECT COUNT(1)
+    FROM teacher t, organization_teacher ot
+    WHERE t.school_id = #{schoolId}
+    AND ot.organization_id = #{organizationId}
+    AND t.id = ot.teacher_id
+    AND status >= 0
+  </select>
+  <select id="getTeacherSubjectDTOByOrganizationId"
+          resultType="com.youdao.sortinghat.data.dto.TeacherSubjectDTO">
+    SELECT t.id, t.name, t.no, t.mobile, t.status, t.school_id, ot.subject
+    FROM teacher t, organization_teacher ot
+    WHERE t.id = ot.teacher_id
+    AND ot.organization_id = #{organizationId}
+    AND t.status >= 0
+  </select>
+</mapper>

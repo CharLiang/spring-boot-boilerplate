@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration  scan="true" scanPeriod="60 seconds" debug="false">
+    <!--<contextName>h5backserver</contextName>-->
+
+    <!--常量-->
+    <property name="log.path" value="logs" />
+    <property name="encoding" value="UTF-8"/>
+    <property name="normal-pattern"
+              value="%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger.%M:%L  %msg%n"/>
+    <!--2018-01-03 17:26:38 INFO  [http-nio-127.0.0.1-9090-exec-1] huiMainMain.sayHello:24  有访问进来啦！-->
+
+    <!--输出到控制台-->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <!--临界值过滤器 过滤掉低于指定临界值的日志-->
+        <!-- <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+             <level>ERROR</level>
+         </filter>-->
+        <encoder>
+            <pattern>${normal-pattern}</pattern>
+            <charset>${encoding}</charset>
+        </encoder>
+    </appender>
+
+    <!--输出到文件 日常日志-->
+    <appender name="common" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/common.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/common.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${normal-pattern}</pattern>
+            <charset>${encoding}</charset>
+        </encoder>
+    </appender>
+
+    <!--输出到文件 数据库日志-->
+    <appender name="sql" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/sql.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.path}/sql.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${normal-pattern}</pattern>
+            <charset>${encoding}</charset>
+        </encoder>
+    </appender>
+
+    <!--<root level="debug">-->
+        <!--<appender-ref ref="console" />-->
+        <!--<appender-ref ref="common" />-->
+    <!--</root>-->
+
+    <root level="info">
+        <appender-ref ref="console" />
+        <appender-ref ref="common" />
+    </root>
+
+    <!-- 为了输出sql -->
+    <logger name="com.youdao.sortinghat.dao.mysql.mapper" level="debug" additivity="false">
+        <appender-ref ref="console"/>
+        <appender-ref ref="sql"/>
+    </logger>
+
+</configuration>

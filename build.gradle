@@ -1,0 +1,185 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.17.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.youdao'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+	maven {
+		url "http://nexus.corp.youdao.com/nexus/content/repositories/public/"
+	}
+}
+
+// 生成器配置文件入口
+configurations {
+	mybatisGenerator
+}
+
+dependencies {
+	// excel
+	compile('cn.afterturn:easypoi-base:3.0.3')
+	compile('cn.afterturn:easypoi-annotation:3.0.3')
+	compile('cn.afterturn:easypoi-web:3.0.3')
+	// 监控
+	compile('org.springframework.boot:spring-boot-starter-actuator')
+	// 切面
+	compile('org.springframework.boot:spring-boot-starter-aop')
+	// 缓存
+	compile('org.springframework.boot:spring-boot-starter-data-redis')
+	compile('org.springframework.boot:spring-boot-starter-cache')
+	compile('com.github.ben-manes.caffeine:caffeine')
+	// WEB相关
+	compile('org.springframework.boot:spring-boot-starter-freemarker')
+	compile('org.springframework.boot:spring-boot-starter-web')
+	// 热部署
+	compile("org.springframework.boot:spring-boot-devtools")
+	// 持久层
+	compile('org.mybatis.spring.boot:mybatis-spring-boot-starter:1.3.2')
+	// 通用mapper
+	compile('tk.mybatis:mapper-spring-boot-starter:2.0.1')
+	// 分页插件
+	compile('com.github.pagehelper:pagehelper-spring-boot-starter:1.2.3')
+	// dom4j
+	compile('dom4j:dom4j:1.6.1')
+	// 连接池
+	compile('com.alibaba:druid:1.1.9')
+	// JSON
+	compile('com.alibaba:fastjson:1.2.35')
+	compile('net.sf.json-lib:json-lib:2.4:jdk15')
+	// lang
+	compile('org.apache.commons:commons-lang3:3.3')
+	// guava
+	compile('com.google.guava:guava:20.0')
+	// lang
+	compile('org.javatuples:javatuples:1.2')
+	// account server
+	compile('com.youdao:yaccount:git-bj-v1.4-109-g4375760.0')
+	compile('com.youdao:cassandra-api:1.0')
+	compile('misc-tools:misc-tools:2.0.142251.0')
+	compile('outfox:web-tools:2.0.164506.0')
+	compile('outfox:collections:1.0')
+	compile('outfox:accountfilter:1.0.0')
+	compile('javax.servlet:javax.servlet-api:3.1.0')
+	compile('commons-io:commons-io:2.5')
+	compile('commons-configuration:commons-configuration:1.9')
+	compile('com.youdao:httpclient-om:3.1.108170.0')
+	compile('org.apache.httpcomponents:fluent-hc:4.5.2')
+	compile('redis.clients:jedis:2.9.0')
+	compile('com.datastax.cassandra:cassandra-driver-core:2.1.5')
+	compile('com.datastax.cassandra:cassandra-driver-mapping:2.1.5')
+	compile('com.youdao.odis:odis:1.0')
+	compile('com.netease.urs.cookie.check.client:urs-cookie:1.1.5-20180226101000')
+	// inner ip
+	compile('toolbox:outlog:2.0.603211.0')
+	// mysql
+	runtime('mysql:mysql-connector-java')
+	// test
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	testCompile('org.apache.lucene:lucene-core:4.0.0')
+	mybatisGenerator ('org.mybatis.generator:mybatis-generator-maven-plugin:1.3.5')
+	mybatisGenerator ('mysql:mysql-connector-java:5.1.44')
+	mybatisGenerator ('tk.mybatis:mapper-spring-boot-starter:1.2.3')
+	mybatisGenerator files("src/main/resources")
+}
+
+// 编码格式
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+// 生成器任务
+task mybatisGenerator {
+	doLast {
+		ant.taskdef(
+				name: 'myGenerator',
+				classname: 'org.mybatis.generator.ant.GeneratorAntTask',
+				classpath: configurations.mybatisGenerator.asPath)
+		ant.myGenerator(
+				verbose: true,
+				overwrite: true,
+				configfile: 'src/main/resources/mybatis-generator.xml')
+	}
+}
+
+// 拷贝文件
+task copyTask(type: Copy, dependsOn:bootRepackage) {
+	from 'build/libs'
+	into '../run'
+	include '*.jar'
+	rename{
+		'sortinghat.jar'
+	}
+	doLast {
+		new File("../run/run.sh").withWriter('UTF-8'){ writer ->
+			writer.println('#!/bin/sh')
+			writer.println('nohup java -server -Xms512M -Xmx1024M -jar sortinghat.jar >/dev/null 2>&1 &')
+		}
+	}
+}
+
+// 拷贝文件
+task copyNeedTailTask(type: Copy, dependsOn:bootRepackage) {
+	from 'build/libs'
+	into '../run'
+	include '*.jar'
+	rename{
+		'sortinghat.jar'
+	}
+	doLast {
+		new File("../run/run.sh").withWriter('UTF-8'){ writer ->
+			writer.println('#!/bin/sh')
+			writer.println('nohup java -server -Xms512M -Xmx1024M -jar sortinghat.jar >/dev/null 2>&1 &')
+			writer.println('sleep 3')
+			writer.println('tail logs/common.log -f')
+		}
+	}
+}
+
+// 读取配置
+def getProperties = {
+	def properties = new Properties()
+	file("src/main/resources/application.properties").withInputStream { inputStream ->
+		properties.load(inputStream)
+	}
+	properties
+}
+
+// 停止应用
+task shutdown(type: Exec) {
+	def properties = getProperties()
+	commandLine 'curl', '-X', 'POST', 'http://localhost:' +
+			properties.getProperty("management.port") + '/shutdown'
+	ignoreExitValue true
+}
+
+// 启动应用
+task start(type: Exec, dependsOn: [copyTask, shutdown]) {
+	workingDir '../run'
+	commandLine 'sh', 'run.sh'
+}
+
+// 启动应用
+task startAndTail(type: Exec, dependsOn: [copyNeedTailTask, shutdown]) {
+	workingDir '../run'
+	commandLine 'sh', 'run.sh'
+}
+

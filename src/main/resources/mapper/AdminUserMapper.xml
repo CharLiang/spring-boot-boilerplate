@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youdao.sortinghat.dao.mysql.mapper.AdminUserMapper">
+  <resultMap id="BaseResultMap" type="com.youdao.sortinghat.dao.mysql.model.AdminUserEntity">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="user_id" jdbcType="VARCHAR" property="userId" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+  </resultMap>
+  <select id="getAdminByUserId" resultMap="BaseResultMap">
+    SELECT *
+    FROM admin_user
+    WHERE user_id = #{userId}
+    AND status = 1;
+  </select>
+</mapper>

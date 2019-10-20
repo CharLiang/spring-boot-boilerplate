@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youdao.sortinghat.dao.mysql.mapper.StudentMapper">
+  <resultMap id="BaseResultMap" type="com.youdao.sortinghat.dao.mysql.model.StudentEntity">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="school_id" jdbcType="INTEGER" property="schoolId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="no" jdbcType="VARCHAR" property="no" />
+    <result column="sn" jdbcType="BIGINT" property="sn" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="mobile" jdbcType="VARCHAR" property="mobile" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+  </resultMap>
+  <update id="updateStatus">
+    UPDATE student
+    SET status = #{status}
+    WHERE id = #{id}
+    AND status = #{oldStatus}
+  </update>
+  <select id="getBySchoolId" resultMap="BaseResultMap">
+    SELECT *
+    FROM student
+    WHERE school_id = #{schoolId}
+    AND status >= 0
+  </select>
+  <select id="getBySchoolIdAndNo" resultMap="BaseResultMap">
+    SELECT *
+    FROM student
+    WHERE school_id = #{schoolId}
+    AND no = #{no}
+  </select>
+  <select id="getStudentIdByIdAndClassType" resultType="java.lang.Integer">
+    SELECT stu.*
+    FROM student stu, organization_student os, organization o
+    WHERE stu.id = os.student_id
+    AND o.id = os.organization_id
+    AND os.student_id = #{id}
+    AND o.type = #{classType}
+    AND stu.status >= 0
+  </select>
+  <select id="getByStudentIdAndClassId" resultMap="BaseResultMap">
+    SELECT stu.*
+    FROM student stu, organization_student os
+    WHERE stu.id = os.student_id
+    AND os.organization_id = #{organizationId}
+    AND os.student_id = #{id}
+  </select>
+  <select id="countBySchoolIdAndClassId" resultType="java.lang.Integer">
+    SELECT COUNT(1)
+    FROM student stu, organization_student os
+    WHERE stu.school_id = #{schoolId}
+    AND os.organization_id = #{organizationId}
+    AND stu.id = os.student_id
+    AND status >= 0
+  </select>
+  <select id="getStudentDTOByOrganizationId" resultType="com.youdao.sortinghat.data.dto.StudentDTO">
+    SELECT stu.id, stu.name, stu.no, stu.mobile, stu.sn, stu.school_id AS schoolId, stu.status
+    FROM student stu, organization_student os
+    WHERE stu.id = os.student_id
+    AND os.organization_id = #{organizationId}
+    AND stu.status >= 0
+  </select>
+  <select id="queryLike" resultMap="BaseResultMap">
+    SELECT DISTINCT stu.*
+    FROM student stu
+    LEFT JOIN organization_student os
+    ON stu.id = os.student_id
+    WHERE stu.school_id = #{schoolId}
+    AND stu.status >= 0
+    <if test="organizationId > 0">
+      AND os.organization_id = #{organizationId}
+    </if>
+    <if test="key != ''">
+      <bind name="keyLike" value="'%' + key + '%'"/>
+      AND (stu.name LIKE #{keyLike} OR stu.no LIKE #{keyLike} OR stu.mobile LIKE #{keyLike})
+    </if>
+  </select>
+</mapper>

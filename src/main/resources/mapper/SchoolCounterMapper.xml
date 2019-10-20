@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youdao.sortinghat.dao.mysql.mapper.SchoolCounterMapper">
+  <resultMap id="BaseResultMap" type="com.youdao.sortinghat.dao.mysql.model.SchoolCounterEntity">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="school_id" jdbcType="INTEGER" property="schoolId" />
+    <result column="student_counter" jdbcType="INTEGER" property="studentCounter" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <update id="updateCounter">
+    UPDATE school_counter
+    SET student_counter = #{counter}
+    WHERE school_id = #{schoolId}
+    AND student_counter = #{oldCounter}
+  </update>
+  <select id="getBySchoolIdForUpdate" resultMap="BaseResultMap">
+    SELECT *
+    FROM school_counter
+    WHERE school_id = #{schoolId}
+    FOR UPDATE
+  </select>
+</mapper>
